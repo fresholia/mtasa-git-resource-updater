@@ -1,4 +1,4 @@
-local updater = new "Updater";
+updater = new "Updater";
 
 local gitURL = "https://raw.githubusercontent.com/"
 
