@@ -75,6 +75,10 @@ function updater.prototype.setVersionFile(self, filePath, type, index)
 end
 
 function updater.prototype.pushEvent(self, event, ...)
+    if event == "progress" and not self.debug then
+        print(...)
+        return
+    end
     if self.events[event] then
         self.events[event](...)
     end
@@ -104,6 +108,7 @@ function updater.prototype.downloadFile(self, currentID)
             if resourceFiles[currentID + 1] then
                 self:downloadFile(currentID + 1)
             else
+                self:saveMetaData()
                 self:pushEvent("complete")
             end
 
@@ -113,6 +118,15 @@ end
 
 function updater.prototype.updateResource(self)
     self:downloadFile(1)
+end
+
+function updater.prototype.saveMetaData(self)
+    fileDelete("meta.xml")
+    fileRename("meta.xml.new", "meta.xml")
+
+    if self.details.restartOnComplete then
+        restartResource(getThisResource())
+    end
 end
 
 function updater.prototype.readMetaData(self)
@@ -181,14 +195,15 @@ end
 
 -- function usages:
 
-updater = new "Updater";
+updater = load(updater)
 updater:setVersionFile("version.yml", "json", "version")
 updater:setDetails({
     user = "cleopatradev",
     repo = "mta-git-resource-updater",
     branch = "master", --default
     private = true,
-    token = "bla bla bla"
+    token = "bla bla bla",
+    restartOnComplete = true -- default: false
 })
 
 updater:checkForUpdates()
